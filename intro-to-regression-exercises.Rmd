@@ -4,74 +4,44 @@
 ```{r}
 library(tidyverse)
 library(HistData)
-
 df <- GaltonFamilies
-
 galton_heights <- sample_n(df, size=1000, replace = TRUE) |>
    summarize(gender)
-
 galton_heights
-
 ```
 
-
 ```{r}
+set.seed(1883)
 
-mean(galton_heights$gender == "male")
-```
-
-2\. Make a scatterplot for heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons.  
-
-```{r}
 galton_heights <- GaltonFamilies |>
-  filter(gender == "female") |>
   group_by(family) |>
   sample_n(1) |>
   ungroup() |>
-  select(mother, childHeight) |>
-  rename(daughter = childHeight)
-
-galton_heights |> 
-  ggplot(aes(mother, daughter)) + 
-  geom_point(alpha = 0.5) 
-
-cor(galton_heights$mother, galton_heights$daughter)
+  select(father, childHeight) 
 ```
 
+2\. Make a scatterplot for heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons.
 ```{r}
-galton_heights <- GaltonFamilies |>
-  filter(gender == "female") |>
-  group_by(family) |>
-  sample_n(1) |>
-  ungroup() |>
-  select(father, childHeight) |>
-  rename(daughter = childHeight)
+galton_q2a <- GaltonFamilies |>
+  filter(gender == "female") 
 
-galton_heights |> 
-  ggplot(aes(father, daughter)) + 
-  geom_point(alpha = 0.5) 
+ plot(galton_q2a$mother, galton_q2a$childHeight, main = "heights between mothers and daughters",
+     xlab = "moms", ylab = "girls",
+     pch = 19, frame = FALSE)
+abline(lm(mother ~ childHeight, data = galton_q2a), col = "blue")
 
-cor(galton_heights$father, galton_heights$daughter)
-```
-```{r}
-galton_heights <- GaltonFamilies |>
-  filter(gender == "male") |>
-  group_by(family) |>
-  sample_n(1) |>
-  ungroup() |>
-  select(mother, childHeight) |>
-  rename(son = childHeight)
+galton_q2b <- GaltonFamilies |>
+  filter(gender == "male") 
 
-galton_heights |> 
-  ggplot(aes(mother, son)) + 
-  geom_point(alpha = 0.5) 
-
-cor(galton_heights$mother, galton_heights$son)
+ plot(galton_q2b$mother, galton_q2b$childHeight, main = "heights between mothers and daughters",
+     xlab = "moms", ylab = "boys",
+     pch = 19, frame = FALSE)
+abline(lm(mother ~ childHeight, data = galton_q2b), col = "blue")
 ```
 
 3\. Compute the correlation in heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons. 
-```{r}
-# it is in the prior chunk
-```
 
- 
+```{r}
+cor(galton_q2a$mother, galton_q2a$childHeight)
+cor(galton_q2b$mother, galton_q2b$childHeight)
+```

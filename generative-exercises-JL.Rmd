@@ -1,0 +1,130 @@
+## Exercises 
+We are going to apply LDA and QDA to the `tissue_gene_expression` dataset. We will start with simple examples based on this dataset and then develop a realistic example. 
+1\. Create a dataset with just the classes "cerebellum" and "hippocampus" (two parts of the brain) and a predictor matrix with 10 randomly selected columns. 
+```{r, eval=FALSE} 
+set.seed(1993) 
+data("tissue_gene_expression") 
+tissues <- c("cerebellum", "hippocampus") 
+ind <- which(tissue_gene_expression$y %in% tissues) 
+y <- droplevels(tissue_gene_expression$y[ind]) 
+x <- tissue_gene_expression$x[ind, ] 
+x <- x[, sample(ncol(x), 10)] 
+``` 
+Use the `train` function to estimate the accuracy of LDA. 
+
+```{r}
+fit <- train(x,y, method = "lda")
+fit
+fit$results$Accuracy
+```
+
+
+
+2\.  In this case, LDA fits two 10-dimensional normal distributions. Look at the fitted model by looking at the `finalModel` component of the result of train. Notice there is a component called `means` that includes the estimate `means` of both distributions. Plot the mean vectors against each other and determine which predictors (genes) appear to be driving the algorithm.  
+
+```{r}
+train_lda$finalModel
+```
+
+
+```{r}
+fit$finalModel
+
+fit$finalModel$means
+```
+
+```{r}
+as.data.frame(fit$finalModel$means) |> mutate(type =rownames(fit$finalModel$means)) |>
+  pivot_longer(cols = -type) |>
+  pivot_wider(names_from = type) |>
+  ggplot(aes( x= cerebellum, y = hippocampus)) +
+  geom_text(aes(label = name, nudge_y = 0.1)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0)
+
+plot(fit$finalModel$means[1,], fit$finalModel$means[2,])
+abline(a=0, b=1)
+```
+TGFBR3 and F11R
+
+
+3\. Repeat exercises 1 with QDA. Does it have a higher accuracy than LDA? 
+
+```{r}
+fit <- train(x,y, method = "qda")
+fit
+fit$results$Accuracy
+```
+No it does not
+
+4\. Are the same predictors (genes) driving the algorithm? Make a plot as in exercise 2. 
+```{r}
+as.data.frame(fit$finalModel$means) |> mutate(type =rownames(fit$finalModel$means)) |>
+  pivot_longer(cols = -type) |>
+  pivot_wider(names_from = type) |>
+  ggplot(aes( x= cerebellum, y = hippocampus)) +
+  geom_text(aes(label = name, nudge_y = 0.1)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0)
+```
+TGFBR3 and F11R
+Yes
+
+
+5\. One thing we see in the previous plot is that the value of predictors correlate in both groups: some predictors are low in both groups while others are high in both groups. The mean value of each predictor, `colMeans(x)`, is not informative or useful for prediction, and often for interpretation purposes it is useful to center or scale each column. This can be achieved with the `preProcessing` argument in `train`. Re-run LDA with `preProcessing = "scale"`. Note that accuracy does not change but see how it is easier to identify the predictors that differ more between groups in the plot made in exercise 4. 
+
+```{r}
+fit <- train(x,y, method = "lda", preProcess = "scale")
+fit
+fit$results$Accuracy
+```
+
+
+```{r}
+as.data.frame(fit$finalModel$means) |> mutate(type =rownames(fit$finalModel$means)) |>
+  pivot_longer(cols = -type) |>
+  pivot_wider(names_from = type) |>
+  ggplot(aes( x= cerebellum, y = hippocampus)) +
+  geom_text(aes(label = name, nudge_y = 0.1)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0)
+```
+
+6\. In the previous exercises we saw that both approaches worked well. Plot the predictor values for the two genes with the largest differences between the two groups in a scatterplot to see how they appear to follow a bivariate distribution as assumed by the LDA and QDA approaches. Color the points by the outcome. 
+
+```{r}
+plot(x[,"TGFBR3"], x[,"F11R"], col=y)
+```
+
+
+7\. Now we are going to increase the complexity of the challenge slightly: we will consider all the tissue types. 
+```{r, eval=FALSE} 
+set.seed(1993) 
+data("tissue_gene_expression") 
+y <- tissue_gene_expression$y 
+x <- tissue_gene_expression$x 
+x <- x[, sample(ncol(x), 10)] 
+``` 
+What accuracy do you get with LDA? 
+
+```{r}
+fit <- train(x,y, method = "lda")
+fit
+fit$results$Accuracy
+```
+
+8\. We see that the results are slightly worse. Use the `confusionMatrix` function to learn what type of errors we are making. 
+```{r}
+y_hat <- predict(fit, x)
+confusionMatrix(y_hat, y)
+```
+
+poor sensitivity for endometrium and poor sensitivity for kidney.
+
+9\. Plot an image of the centers of the seven 10-dimensional normal distributions. 
+
+```{r}
+
+```
+
+ 

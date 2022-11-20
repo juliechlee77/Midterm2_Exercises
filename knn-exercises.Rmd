@@ -1,0 +1,102 @@
+## Exercises 
+1\. Earlier we used logistic regression to predict sex from height. Use kNN to do the same. Use the code described in this chapter to select the $F_1$ measure and plot it against $k$. Compare to the $F_1$ of about 0.6 we obtained with regression. 
+```{r}
+library(caret)
+library(genefilter) 
+library(tibble)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(dslabs)
+
+dfq1 <- as.data.frame(heights)
+set.seed(2007)
+test_index <- createDataPartition(dfq1$sex, times = 1, p = 0.5, list = FALSE)
+
+test_set <- dfq1[test_index, ]
+train_set <- dfq1[-test_index, ]
+
+modelLookup("knn")
+train_knn <- train(sex ~ height, method = "knn", data = dfq1, tuneGrid = data.frame(k = seq(9, 71, 2)))
+ggplot(train_knn, highlight = TRUE)
+
+```
+```{r}
+train_glm <- train(sex ~ ., method = "glm", data = dfq1)
+train_knn <- train(sex ~ ., method = "knn", data = dfq1)
+
+y_hat_glm <- predict(train_glm, dfq1$test, type = "raw")
+y_hat_knn <- predict(train_knn, dfq1$test, type = "raw")
+
+confusionMatrix(y_hat_glm, dfq1$test$sex)$overall[["Accuracy"]]
+
+confusionMatrix(y_hat_knn, dfq1$test$sex)$overall[["Accuracy"]]
+```
+
+2\. Load the following dataset: 
+```{r, eval=FALSE} 
+library(caret)
+library(tibble)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(dslabs)
+data("tissue_gene_expression") 
+df <- as.data.frame(tissue_gene_expression)
+
+
+dat.2 <- as.data.frame(tissue_gene_expression)
+dat.2 <- tibble::rownames_to_column(dat.2, "VALUE")
+
+```
+
+```{r}
+df1 <- str_replace_all(dat.2$VALUE, "[:digit:]", "")
+df1 <- gsub("\\_|\\]", "", df1)
+```
+
+```{r}
+dat.2$VALUE <- df1
+```
+
+This dataset includes a matrix `x`:  
+```{r, eval=FALSE} 
+dim(tissue_gene_expression$x) 
+``` 
+with the gene expression measured on 500 genes for 189 biological samples representing seven different tissues. The tissue type is stored in `y`: 
+```{r, eval=FALSE} 
+table(tissue_gene_expression$y) 
+``` 
+Split the data in training and test sets, then use kNN to predict tissue type and see what accuracy you obtain. Try it for  $k = 1, 3, \dots, 11$. 
+
+```{r}
+set.seed(2000)
+test_index <- createDataPartition(dat.2$VALUE, times = 1, p = 0.5, list = FALSE)
+
+test_set <- dat.2[test_index, ]
+train_set <- dat.2[-test_index, ]
+```
+
+Training and train control
+```{r}
+
+set.seed(4020)
+ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
+knnFit <- train(VALUE ~ ., data = train_set, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
+
+#Output of kNN fit
+knnFit
+```
+```{r}
+plot(knnFit)
+
+```
+
+```{r}
+knnPredict <- predict(knnFit,newdata = test_set )
+#Get the confusion matrix to see accuracy value and other parameter values
+confusionMatrix(knnPredict, as.factor(test_set$VALUE))
+
+plot(knnFit, print.thres = 0.5, type="S")
+```
+ 

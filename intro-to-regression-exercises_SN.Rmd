@@ -1,0 +1,44 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+## Exercises 
+1\. Load the `GaltonFamilies` data from the __HistData__. The children in each family are listed by gender and then by height. Create a dataset called `galton_heights` by picking a male and female at random.  
+
+**ANSWER:**
+```{r}
+library(tidyverse)
+library(HistData)
+data("GaltonFamilies")
+
+galton_heights <- GaltonFamilies |>
+  group_by(family, gender) |>
+  sample_n(1)
+galton_heights
+```
+
+
+2\. Make a scatterplot for heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons.  
+
+**ANSWER:**
+```{r}
+# mothers and children
+galton_heights |> ggplot(aes(mother, childHeight, color = gender)) + 
+  geom_point(alpha = 0.5) +
+  labs(x= "mother height", y = "children height", color = "Child's gender")
+
+# fathers and children
+galton_heights |> ggplot(aes(father, childHeight, color = gender)) + 
+  geom_point(alpha = 0.5) +
+  labs(x= "father height", y = "children height", color = "Child's gender")
+```
+
+3\. Compute the correlation in heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons. 
+
+**ANSWER:**
+```{r}
+galton_heights |> 
+  group_by(gender) |>
+  summarize(r_mother = cor(mother, childHeight), r_father = cor(father, childHeight))
+```

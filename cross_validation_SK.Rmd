@@ -20,7 +20,7 @@ x_subset <- x[ ,sample(p, 100)]
 ```{r}
 library(caret)
 dat <- data.frame(y, x_subset)
-mod <- train(y ~ ., method = "glm", data = dat, family = "binomial", trControl = trainControl("cv"))#glm is for binomial logistic, use gaussian for linear
+mod <- train(y ~ ., method = "glm", data = dat, family = "binomial", trControl = trainControl("cv")) #glm is for binomial logistic, use gaussian for linear
 mod$results
 ```
 
@@ -36,7 +36,7 @@ mod$results
 
 
 ```{r, eval=FALSE} 
-library(genefilter) 
+#library(genefilter) 
 tt <- colttests(x, y) 
 head(tt)
 ``` 
@@ -184,6 +184,7 @@ mean(M_star)
 sd(M_star)
 hist(M_star)
 ```
+
 ```{r}
 bs<- replicate(10000, {
   ind <- sample(1:100, 100, replace = TRUE)

@@ -1,0 +1,45 @@
+---
+title: "intro_regression_SK"
+author: "Soomin Kim"
+date: "2022-11-20"
+output: html_document
+---
+
+## Exercises 
+1\. Load the `GaltonFamilies` data from the __HistData__. The children in each family are listed by gender and then by height. Create a dataset called `galton_heights` by picking a male and female at random (from each family).
+
+```{r}
+library(HistData)
+library(tidyverse)
+library(ggplot2)
+GaltonFamilies
+galton_heights <- GaltonFamilies |> group_by(family, gender) |> sample_n(1)
+```
+
+
+2\. Make a scatterplot for heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons. 
+```{r}
+galton_heights |>
+  ggplot(aes(x = mother, y = childHeight)) +
+  geom_point() +
+  facet_wrap(gender ~ .)
+
+galton_heights |>
+  ggplot(aes(x = father, y = childHeight)) +
+  geom_point() +
+  facet_wrap(gender ~ .)
+```
+
+
+3\. Compute the correlation in heights between mothers and daughters, mothers and sons, fathers and daughters, and fathers and sons. 
+
+```{r}
+galton_heights |>
+  group_by(gender) |> 
+  summarise(correlation = cor(mother, childHeight))
+
+galton_heights |>
+  group_by(gender) |> 
+  summarise(correlation = cor(father, childHeight))
+```
+

@@ -1,0 +1,63 @@
+---
+title: "confusion_matrix_SK"
+author: "Soomin Kim"
+date: "2022-11-20"
+output: html_document
+---
+## Exercises 
+The `reported_height` and `height` datasets were collected from three classes taught in the Departments of Computer Science and Biostatistics, as well as remotely through the Extension School. The biostatistics class was taught in 2016 along with an online version offered by the Extension School. On 2016-01-25 at 8:15 AM, during one of the lectures, the instructors asked students to fill in the sex and height questionnaire that populated the `reported_height` dataset. The online students filled the survey during the next few days, after the lecture was posted online. We can use this insight to define a variable, call it `type`, to denote the type of student:  `inclass` or `online`: 
+```{r, eval=FALSE} 
+library(tidyverse)
+library(lubridate)
+library(dslabs)
+data("reported_heights") 
+dat <- mutate(reported_heights, date_time = ymd_hms(time_stamp)) |> 
+  filter(date_time >= make_date(2016, 01, 25) &  
+           date_time < make_date(2016, 02, 1)) |> 
+  mutate(type = ifelse(day(date_time) == 25 & hour(date_time) == 8 &  
+                         between(minute(date_time), 15, 30), 
+                       "inclass", "online")) |> select(sex, type) 
+x <- dat$type 
+y <- factor(dat$sex, c("Female", "Male")) 
+``` 
+
+1\. Show summary statistics that indicate that the `type` is predictive of sex. 
+```{r}
+dat |> group_by(type, sex) |> summarise(count = n())
+dat
+```
+# 2/3 of inclass is female
+# 1/3 of inclass is male
+
+
+2\. Instead of using height to predict sex, use the `type` variable. 
+
+```{r}
+yhat <- ifelse(x == "inclass", "Female", "Male")
+```
+
+
+3\. Show the confusion matrix. 
+```{r}
+table(y, yhat)
+```
+
+
+4\. Use the `confusionMatrix` function in the __caret__ package to report accuracy. 
+```{r}
+library(caret)
+yhat <- factor(yhat) #yhat must be factor
+confusionMatrix(yhat, y)
+```
+
+5\. Now use the `sensitivity` and `specificity` functions to report specificity and sensitivity. 
+```{r}
+sensitivity(yhat, y)
+specificity(yhat, y)
+```
+
+6\. What is the prevalence (% of females) in the `dat` dataset defined above? 
+```{r}
+mean(dat$sex == "Female")
+```
+

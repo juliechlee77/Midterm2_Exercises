@@ -78,5 +78,6 @@ co2_combine
 co2_combine |> ggplot(aes(month, co2_residuals)) +
   geom_point() + 
   geom_smooth(method = "gam", se = FALSE) 
+
 ```
 
